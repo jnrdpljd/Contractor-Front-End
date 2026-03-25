@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Profile — Contractor Portal</title>
+  <link rel="stylesheet" href="contractor.css"/>
+  <style>
+    .profile-hero {
+      background: linear-gradient(135deg, var(--maroon-dark) 0%, rgba(107,5,4,0.3) 60%, var(--surface) 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 28px;
+      margin-bottom: 22px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      position: relative;
+      overflow: hidden;
+    }
+    .profile-hero::before {
+      content: '';
+      position: absolute;
+      top: -40px; right: -40px;
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, rgba(230,175,46,0.1) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .profile-hero-info { flex: 1; min-width: 200px; }
+    .profile-hero-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px; font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    .profile-hero-role {
+      font-size: 12px; font-weight: 600;
+      color: var(--gold);
+      text-transform: uppercase; letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+    .profile-hero-stats {
+      display: flex; gap: 20px; flex-wrap: wrap;
+    }
+    .hero-stat { text-align: center; }
+    .hero-stat-val {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px; font-weight: 700;
+      color: var(--white); line-height: 1;
+    }
+    .hero-stat-lbl {
+      font-size: 10px; color: rgba(255,255,255,0.5);
+      text-transform: uppercase; letter-spacing: 0.6px;
+      margin-top: 2px;
+    }
+
+    .verify-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--border-soft);
+      flex-wrap: wrap;
+    }
+    .verify-row:last-child { border-bottom: none; }
+    .verify-row-label { flex: 1; min-width: 100px; font-size: 13px; color: var(--text-secondary); }
+    .verify-row-value { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+
+    .otp-section {
+      background: var(--surface-2);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-top: 12px;
+      display: none;
+    }
+    .otp-section.show { display: block; animation: pageFadeIn 0.25s ease; }
+
+    .skill-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 12px;
+      background: var(--gold-dim);
+      border: 1px solid var(--gold-border);
+      border-radius: 99px;
+      font-size: 12px; font-weight: 600;
+      color: var(--gold);
+      cursor: default;
+      transition: all var(--transition);
+    }
+    .skill-tag .remove-skill {
+      cursor: pointer; color: var(--text-muted);
+      font-size: 13px; line-height: 1;
+    }
+    .skill-tag .remove-skill:hover { color: var(--danger); }
+    .skills-wrap {
+      display: flex; gap: 8px; flex-wrap: wrap;
+      padding: 12px 0;
+    }
+
+    .profile-completion {
+      background: var(--surface-2);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      margin-bottom: 20px;
+    }
+    .completion-label {
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 12px; font-weight: 600;
+      color: var(--text-muted); margin-bottom: 8px;
+    }
+    .completion-pct { color: var(--gold); }
+
+    [data-theme="light"] .profile-hero {
+      background: linear-gradient(135deg, rgba(107,5,4,0.08) 0%, rgba(230,175,46,0.06) 60%, var(--surface) 100%);
+    }
+    [data-theme="light"] .profile-hero-name { color: var(--text-primary); }
+    [data-theme="light"] .hero-stat-val { color: var(--maroon); }
+    [data-theme="light"] .hero-stat-lbl { color: var(--text-muted); }
+  </style>
+</head>
+<body>
+<div class="portal-layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="logo-mark">CP</div>
+        <div class="sidebar-logo-text">
+          <strong>ContractorHub</strong>
+          <small>Contractor Portal</small>
+        </div>
+      </div>
+      <button class="toggle-btn" id="sidebarToggle" title="Toggle Sidebar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+      </button>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-avatar-wrap">
+        <img class="user-avatar" id="sidebarAvatar" src="" alt="" style="display:none"/>
+        <div class="user-avatar-fallback" id="sidebarAvatarFallback">JD</div>
+        <span class="status-dot"></span>
+      </div>
+      <div class="user-info">
+        <div class="user-name" id="sidebarUserName">Juan dela Cruz</div>
+        <div class="user-role" id="sidebarUserRole">Contractor</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="contractor_dashboard.html" class="nav-item" data-page="contractor_dashboard.html">
+        <span class="nav-icon">🏠</span>
+        <span class="sidebar-label">Dashboard</span>
+        <span class="nav-tooltip">Dashboard</span>
+      </a>
+      <a href="contractor_bookings.html" class="nav-item" data-page="contractor_bookings.html">
+        <span class="nav-icon">📋</span>
+        <span class="sidebar-label">Bookings</span>
+        <span class="nav-badge" id="bookingsBadge">3</span>
+        <span class="nav-tooltip">Bookings</span>
+      </a>
+      <a href="contractor_messages.html" class="nav-item" data-page="contractor_messages.html">
+        <span class="nav-icon">💬</span>
+        <span class="sidebar-label">Messages</span>
+        <span class="nav-badge" id="messagesBadge">5</span>
+        <span class="nav-tooltip">Messages</span>
+      </a>
+      <a href="contractor_calendar.html" class="nav-item" data-page="contractor_calendar.html">
+        <span class="nav-icon">📅</span>
+        <span class="sidebar-label">Calendar</span>
+        <span class="nav-tooltip">Calendar</span>
+      </a>
+      <div class="nav-section-label">Account</div>
+      <a href="contractor_profile.html" class="nav-item active" data-page="contractor_profile.html">
+        <span class="nav-icon">👤</span>
+        <span class="sidebar-label">Profile</span>
+        <span class="nav-tooltip">Profile</span>
+      </a>
+      <a href="contractor_settings.html" class="nav-item" data-page="contractor_settings.html">
+        <span class="nav-icon">⚙️</span>
+        <span class="sidebar-label">Settings</span>
+        <span class="nav-tooltip">Settings</span>
+      </a>
+      <div class="divider"></div>
+      <button class="nav-item nav-logout" onclick="handleLogout(event)">
+        <span class="nav-icon">🚪</span>
+        <span class="sidebar-label">Log Out</span>
+        <span class="nav-tooltip">Log Out</span>
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-footer-text">HandyFix v2.0 © 2026</div>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- MAIN -->
+  <main class="main-content" id="mainContent">
+    <header class="top-header">
+      <div class="header-left">
+        <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+        <div>
+          <div class="page-title">My Profile</div>
+          <div class="breadcrumb">Manage your personal information</div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="header-chip" id="headerDate">—</div>
+        <button class="theme-toggle-btn" title="Toggle Theme">☀️</button>
+        <div class="hdr-btn" title="Notifications">🔔<span class="hdr-notif-dot"></span></div>
+      </div>
+    </header>
+
+    <div class="page-content">
+
+      <!-- Profile Hero -->
+      <div class="profile-hero">
+        <div class="avatar-upload-wrap" onclick="document.getElementById('avatarFileInput').click()">
+          <img id="profileAvatarPreview" class="avatar-upload-preview"
+               src="https://ui-avatars.com/api/?name=Juan+dela+Cruz&background=6B0504&color=E6AF2E&size=200"
+               alt="Profile">
+          <div class="avatar-upload-btn" title="Change photo">📷</div>
+          <input type="file" id="avatarFileInput" accept="image/*" style="display:none"/>
+        </div>
+        <div class="profile-hero-info">
+          <div class="profile-hero-name" id="heroName">Juan dela Cruz</div>
+          <div class="profile-hero-role" id="heroRole">Contractor · General Services</div>
+          <div class="profile-hero-stats">
+            <div class="hero-stat"><div class="hero-stat-val">48</div><div class="hero-stat-lbl">Bookings</div></div>
+            <div class="hero-stat"><div class="hero-stat-val">4.8</div><div class="hero-stat-lbl">Rating</div></div>
+            <div class="hero-stat"><div class="hero-stat-val">₱62K</div><div class="hero-stat-lbl">Earned</div></div>
+            <div class="hero-stat"><div class="hero-stat-val">34</div><div class="hero-stat-lbl">Done</div></div>
+          </div>
+        </div>
+        <div>
+          <span class="badge badge-success">● Active</span>
+        </div>
+      </div>
+
+      <!-- Profile Completion -->
+      <div class="profile-completion">
+        <div class="completion-label">
+          <span>Profile Completion</span>
+          <span class="completion-pct" id="completionPct">75%</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="completionBar" style="width:75%"></div>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:6px">Add your skills and verify your phone to reach 100%</div>
+      </div>
+
+      <div class="grid-2">
+
+        <!-- Left Column -->
+        <div>
+
+          <!-- Personal Info Card -->
+          <div class="card mb-6">
+            <div class="card-header">
+              <div class="card-title"><span class="card-title-icon">👤</span> Personal Information</div>
+              <button class="btn btn-sm btn-secondary" onclick="toggleEdit('personalForm')">✏️ Edit</button>
+            </div>
+
+            <div id="personalView">
+              <div style="display:grid;gap:10px;">
+                <div class="verify-row">
+                  <span class="verify-row-label">Full Name</span>
+                  <span class="verify-row-value" id="viewName">Juan dela Cruz</span>
+                </div>
+                <div class="verify-row">
+                  <span class="verify-row-label">Email</span>
+                  <span class="verify-row-value" id="viewEmail">juan@example.com</span>
+                </div>
+                <div class="verify-row">
+                  <span class="verify-row-label">Phone</span>
+                  <span class="verify-row-value" id="viewPhone">+63 912 345 6789</span>
+                </div>
+                <div class="verify-row">
+                  <span class="verify-row-label">Address</span>
+                  <span class="verify-row-value" id="viewAddress">123 Rizal St, Manila</span>
+                </div>
+                <div class="verify-row">
+                  <span class="verify-row-label">Trade / Specialty</span>
+                  <span class="verify-row-value" id="viewTrade">Electrical, Plumbing</span>
+                </div>
+                <div class="verify-row" style="border:none">
+                  <span class="verify-row-label">Experience</span>
+                  <span class="verify-row-value" id="viewExp">8 years</span>
+                </div>
+              </div>
+            </div>
+
+            <form id="personalForm" style="display:none" onsubmit="savePersonalInfo(event)">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">First Name <span class="required">*</span></label>
+                  <input class="form-input" type="text" id="firstName" value="Juan" required/>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Last Name <span class="required">*</span></label>
+                  <input class="form-input" type="text" id="lastName" value="dela Cruz" required/>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Address</label>
+                <input class="form-input" type="text" id="address" value="123 Rizal St, Manila"/>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Trade / Specialty</label>
+                  <input class="form-input" type="text" id="trade" value="Electrical, Plumbing"/>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Years of Experience</label>
+                  <input class="form-input" type="number" id="experience" value="8" min="0" max="60"/>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Short Bio</label>
+                <textarea class="form-input" id="bio" rows="3" placeholder="Tell clients about yourself…"></textarea>
+              </div>
+              <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px;">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="toggleEdit('personalForm',false)">Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm">💾 Save Changes</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Skills Card -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><span class="card-title-icon">🛠️</span> Skills & Expertise</div>
+            </div>
+            <div class="skills-wrap" id="skillsWrap">
+              <!-- Rendered by JS -->
+            </div>
+            <div class="flex gap-2 mt-4">
+              <input class="form-input" type="text" id="newSkillInput" placeholder="Add a skill (e.g. Tiling)" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();addSkill();}"/>
+              <button class="btn btn-outline-gold btn-sm" onclick="addSkill()">+ Add</button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Column -->
+        <div>
+
+          <!-- Verification Card -->
+          <div class="card mb-6">
+            <div class="card-header">
+              <div class="card-title"><span class="card-title-icon">🔒</span> Verification</div>
+            </div>
+
+            <!-- Email -->
+            <div class="verify-row">
+              <span style="font-size:14px">📧</span>
+              <div style="flex:1">
+                <div class="verify-row-label" style="margin-bottom:0">Email Address</div>
+                <div class="verify-row-value" id="verifyEmail">juan@example.com</div>
+              </div>
+              <span class="verify-badge verified" id="emailVerifyBadge">✓ Verified</span>
+            </div>
+
+            <div class="form-group mt-4">
+              <label class="form-label">Change Email</label>
+              <div class="flex gap-2">
+                <input class="form-input" type="email" id="newEmail" placeholder="Enter new email"/>
+                <button class="btn btn-outline-gold btn-sm" onclick="requestEmailVerify()">Verify</button>
+              </div>
+            </div>
+
+            <div id="emailOtpSection" class="otp-section">
+              <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px">Enter the 6-digit code sent to your email:</div>
+              <div class="otp-wrap">
+                <input class="form-input otp-input" type="text" id="emailOtp" maxlength="6" placeholder="• • • • • •"/>
+              </div>
+              <div class="flex justify-between mt-3">
+                <button class="btn btn-xs btn-secondary" id="emailResendBtn" onclick="resendEmailOTP()">Resend Code</button>
+                <button class="btn btn-xs btn-primary" onclick="verifyEmail()">Confirm →</button>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Phone -->
+            <div class="verify-row">
+              <span style="font-size:14px">📱</span>
+              <div style="flex:1">
+                <div class="verify-row-label" style="margin-bottom:0">Phone Number</div>
+                <div class="verify-row-value" id="verifyPhone">+63 912 345 6789</div>
+              </div>
+              <span class="verify-badge unverified" id="phoneVerifyBadge">! Unverified</span>
+            </div>
+
+            <div class="form-group mt-4">
+              <label class="form-label">Change / Verify Phone</label>
+              <div class="flex gap-2">
+                <input class="form-input" type="tel" id="newPhone" placeholder="+63 9XX XXX XXXX"/>
+                <button class="btn btn-outline-gold btn-sm" onclick="requestPhoneVerify()">Send SMS</button>
+              </div>
+            </div>
+
+            <div id="phoneOtpSection" class="otp-section">
+              <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px">Enter the 6-digit SMS code:</div>
+              <div class="otp-wrap">
+                <input class="form-input otp-input" type="text" id="phoneOtp" maxlength="6" placeholder="• • • • • •"/>
+              </div>
+              <div class="flex justify-between mt-3">
+                <button class="btn btn-xs btn-secondary" id="phoneResendBtn" onclick="resendPhoneOTP()">Resend SMS</button>
+                <button class="btn btn-xs btn-primary" onclick="verifyPhone()">Confirm →</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Change Password -->
+          <div class="card mb-6">
+            <div class="card-header">
+              <div class="card-title"><span class="card-title-icon">🔑</span> Change Password</div>
+            </div>
+            <form onsubmit="changePassword(event)">
+              <div class="form-group">
+                <label class="form-label">Current Password</label>
+                <div style="position:relative">
+                  <input class="form-input" type="password" id="currentPass" placeholder="••••••••"/>
+                  <button type="button" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:15px" onclick="togglePassword('currentPass')">👁</button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">New Password <span class="required">*</span></label>
+                <input class="form-input" type="password" id="newPass" placeholder="••••••••" oninput="checkPasswordStrength(this.value)"/>
+                <div class="progress-bar-bg mt-2" style="height:4px"><div class="progress-bar-fill" id="passStrengthBar" style="width:0%;background:var(--danger)"></div></div>
+                <div class="form-hint" id="passStrengthLabel">Enter a password</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Confirm New Password</label>
+                <input class="form-input" type="password" id="confirmPass" placeholder="••••••••"/>
+              </div>
+              <div style="text-align:right">
+                <button type="submit" class="btn btn-primary btn-sm">Update Password</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Documents -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><span class="card-title-icon">📄</span> Documents & Licenses</div>
+              <button class="btn btn-sm btn-outline-gold" onclick="document.getElementById('docUpload').click()">+ Upload</button>
+            </div>
+            <input type="file" id="docUpload" accept=".pdf,.jpg,.png" style="display:none" onchange="handleDocUpload(this)"/>
+            <div id="docsList">
+              <div class="verify-row">
+                <span style="font-size:14px">📋</span>
+                <div style="flex:1">
+                  <div style="font-size:13px;font-weight:600;color:var(--text-primary)">Business Permit 2026</div>
+                  <div style="font-size:11px;color:var(--text-muted)">Uploaded Mar 1, 2026 · PDF</div>
+                </div>
+                <span class="verify-badge verified">✓ Valid</span>
+              </div>
+              <div class="verify-row" style="border:none">
+                <span style="font-size:14px">🪪</span>
+                <div style="flex:1">
+                  <div style="font-size:13px;font-weight:600;color:var(--text-primary)">TESDA Certificate</div>
+                  <div style="font-size:11px;color:var(--text-muted)">Uploaded Jan 10, 2026 · PDF</div>
+                </div>
+                <span class="verify-badge verified">✓ Valid</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- Logout Modal -->
+<div class="modal-overlay" id="logoutModal">
+  <div class="modal" style="max-width:360px;text-align:center">
+    <div style="font-size:44px;margin-bottom:12px">🚪</div>
+    <div class="modal-title" style="text-align:center;margin-bottom:8px">Log Out?</div>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:22px">You will be returned to the login screen.</p>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button class="btn btn-secondary" onclick="closeModal('logoutModal')">Stay</button>
+      <button class="btn btn-maroon" onclick="confirmLogout()">Yes, Log Out</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="contractor.js"></script>
+<script>
+/* ── Profile Page Script ── */
+
+const SKILLS_KEY = 'contractorSkills';
+let skills = JSON.parse(localStorage.getItem(SKILLS_KEY) || '[]');
+if (!skills.length) skills = ['Electrical Wiring','Plumbing','Painting','Carpentry','Tiling'];
+
+document.addEventListener('DOMContentLoaded', () => {
+  setupAvatarUpload('avatarFileInput', 'profileAvatarPreview');
+  renderSkills();
+  updateCompletion();
+});
+
+/* ── Toggle Edit ── */
+function toggleEdit(formId, show = true) {
+  const form = document.getElementById(formId);
+  const view = document.getElementById('personalView');
+  if (show) { form.style.display = 'block'; if(view) view.style.display = 'none'; }
+  else       { form.style.display = 'none';  if(view) view.style.display = 'block'; }
+}
+
+/* ── Save Personal Info ──
+   DB: PUT /api/contractor/profile
+   Body: { first_name, last_name, address, trade, experience, bio }
+*/
+function savePersonalInfo(e) {
+  e.preventDefault();
+  const first = document.getElementById('firstName').value.trim();
+  const last  = document.getElementById('lastName').value.trim();
+  const full  = `${first} ${last}`;
+
+  // Update view
+  document.getElementById('viewName').textContent    = full;
+  document.getElementById('viewAddress').textContent = document.getElementById('address').value;
+  document.getElementById('viewTrade').textContent   = document.getElementById('trade').value;
+  document.getElementById('viewExp').textContent     = document.getElementById('experience').value + ' years';
+  document.getElementById('heroName').textContent    = full;
+
+  // Save to localStorage (replace with API call)
+  const user = JSON.parse(localStorage.getItem('contractorUser') || '{}');
+  user.name = full;
+  localStorage.setItem('contractorUser', JSON.stringify(user));
+
+  toggleEdit('personalForm', false);
+  showToast('Profile updated successfully!', 'success');
+  updateCompletion();
+}
+
+/* ── Skills ── */
+function renderSkills() {
+  const wrap = document.getElementById('skillsWrap');
+  if (!wrap) return;
+  if (!skills.length) {
+    wrap.innerHTML = '<span style="font-size:12px;color:var(--text-muted)">No skills added yet.</span>';
+    return;
+  }
+  wrap.innerHTML = skills.map((s, i) => `
+    <span class="skill-tag">
+      ${escapeHtml(s)}
+      <span class="remove-skill" onclick="removeSkill(${i})" title="Remove">×</span>
+    </span>`).join('');
+}
+
+function addSkill() {
+  const input = document.getElementById('newSkillInput');
+  const val   = input.value.trim();
+  if (!val) return;
+  if (skills.includes(val)) { showToast('Skill already added', 'warning'); return; }
+  if (skills.length >= 15)  { showToast('Maximum 15 skills allowed', 'warning'); return; }
+  skills.push(val);
+  localStorage.setItem(SKILLS_KEY, JSON.stringify(skills));
+  input.value = '';
+  renderSkills();
+  updateCompletion();
+}
+
+function removeSkill(i) {
+  skills.splice(i, 1);
+  localStorage.setItem(SKILLS_KEY, JSON.stringify(skills));
+  renderSkills();
+  updateCompletion();
+}
+
+/* ── Profile Completion ── */
+function updateCompletion() {
+  const checks = [
+    !!document.getElementById('viewName')?.textContent,
+    !!document.getElementById('viewEmail')?.textContent,
+    !!document.getElementById('viewPhone')?.textContent,
+    !!document.getElementById('viewAddress')?.textContent,
+    document.getElementById('emailVerifyBadge')?.textContent.includes('Verified'),
+    document.getElementById('phoneVerifyBadge')?.textContent.includes('Verified'),
+    skills.length > 0,
+    !!document.getElementById('viewTrade')?.textContent,
+  ];
+  const pct = Math.round((checks.filter(Boolean).length / checks.length) * 100);
+  document.getElementById('completionPct').textContent = pct + '%';
+  document.getElementById('completionBar').style.width  = pct + '%';
+}
+
+/* ── Email Verification ──
+   DB: POST /api/contractor/otp/email → sends OTP to email
+       POST /api/contractor/otp/verify → { type:'email', code, value }
+*/
+function requestEmailVerify() {
+  const email = document.getElementById('newEmail').value.trim();
+  if (!email || !email.includes('@')) { showToast('Enter a valid email address', 'warning'); return; }
+  // sendEmailOTP(email); // ← uncomment for real backend
+  document.getElementById('emailOtpSection').classList.add('show');
+  showToast(`Demo: OTP sent to ${email}`, 'info');
+  startOTPCountdown('emailResendBtn', 60);
+}
+
+function resendEmailOTP() {
+  const email = document.getElementById('newEmail').value.trim();
+  if (!email) { showToast('Enter your email first', 'warning'); return; }
+  // sendEmailOTP(email);
+  showToast('Code resent!', 'info');
+  startOTPCountdown('emailResendBtn', 60);
+}
+
+function verifyEmail() {
+  const code = document.getElementById('emailOtp').value.trim();
+  if (code.length < 4) { showToast('Enter the full OTP code', 'warning'); return; }
+  // Demo verification
+  const email = document.getElementById('newEmail').value.trim();
+  document.getElementById('verifyEmail').textContent = email;
+  document.getElementById('viewEmail').textContent   = email;
+  const badge = document.getElementById('emailVerifyBadge');
+  badge.textContent = '✓ Verified';
+  badge.className = 'verify-badge verified';
+  document.getElementById('emailOtpSection').classList.remove('show');
+  showToast('Email verified successfully!', 'success');
+  updateCompletion();
+}
+
+/* ── Phone Verification ──
+   DB: POST /api/contractor/otp/phone → sends SMS
+       POST /api/contractor/otp/verify → { type:'phone', code, value }
+*/
+function requestPhoneVerify() {
+  const phone = document.getElementById('newPhone').value.trim();
+  if (!phone) { showToast('Enter your phone number', 'warning'); return; }
+  // sendPhoneOTP(phone); // ← uncomment for real backend
+  document.getElementById('phoneOtpSection').classList.add('show');
+  showToast(`Demo: SMS code sent to ${phone}`, 'info');
+  startOTPCountdown('phoneResendBtn', 60);
+}
+
+function resendPhoneOTP() {
+  const phone = document.getElementById('newPhone').value.trim();
+  if (!phone) { showToast('Enter your phone number first', 'warning'); return; }
+  // sendPhoneOTP(phone);
+  showToast('SMS resent!', 'info');
+  startOTPCountdown('phoneResendBtn', 60);
+}
+
+function verifyPhone() {
+  const code = document.getElementById('phoneOtp').value.trim();
+  if (code.length < 4) { showToast('Enter the full OTP code', 'warning'); return; }
+  const phone = document.getElementById('newPhone').value.trim();
+  document.getElementById('verifyPhone').textContent = phone;
+  document.getElementById('viewPhone').textContent   = phone;
+  const badge = document.getElementById('phoneVerifyBadge');
+  badge.textContent = '✓ Verified';
+  badge.className = 'verify-badge verified';
+  document.getElementById('phoneOtpSection').classList.remove('show');
+  showToast('Phone verified successfully!', 'success');
+  updateCompletion();
+}
+
+/* ── Password ──
+   DB: PUT /api/contractor/password
+   Body: { current_password, new_password }
+*/
+function changePassword(e) {
+  e.preventDefault();
+  const current = document.getElementById('currentPass').value;
+  const newP    = document.getElementById('newPass').value;
+  const confirm = document.getElementById('confirmPass').value;
+  if (!current) { showToast('Enter your current password', 'warning'); return; }
+  if (newP.length < 8) { showToast('Password must be at least 8 characters', 'error'); return; }
+  if (newP !== confirm) { showToast('Passwords do not match', 'error'); return; }
+  // await apiPut('/contractor/password', { current_password: current, new_password: newP });
+  showToast('Password updated successfully!', 'success');
+  e.target.reset();
+}
+
+function checkPasswordStrength(val) {
+  const bar = document.getElementById('passStrengthBar');
+  const lbl = document.getElementById('passStrengthLabel');
+  if (!bar || !lbl) return;
+  let score = 0;
+  if (val.length >= 8) score++;
+  if (/[A-Z]/.test(val)) score++;
+  if (/[0-9]/.test(val)) score++;
+  if (/[^A-Za-z0-9]/.test(val)) score++;
+  const levels = [
+    { w:'0%',   bg:'var(--danger)',  l:'Too short' },
+    { w:'25%',  bg:'var(--danger)',  l:'Weak' },
+    { w:'50%',  bg:'var(--gold)',    l:'Fair' },
+    { w:'75%',  bg:'#60a5fa',        l:'Good' },
+    { w:'100%', bg:'var(--success)', l:'Strong' },
+  ];
+  const level = levels[score] || levels[0];
+  bar.style.width      = level.w;
+  bar.style.background = level.bg;
+  lbl.textContent      = level.l;
+}
+
+function togglePassword(id) {
+  const input = document.getElementById(id);
+  if (!input) return;
+  input.type = input.type === 'password' ? 'text' : 'password';
+}
+
+/* ── Document Upload ──
+   DB: POST /api/contractor/documents (multipart form-data)
+*/
+function handleDocUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const list = document.getElementById('docsList');
+  const ext  = file.name.split('.').pop().toUpperCase();
+  list.innerHTML += `
+    <div class="verify-row" style="border:none">
+      <span style="font-size:14px">📄</span>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:600;color:var(--text-primary)">${escapeHtml(file.name)}</div>
+        <div style="font-size:11px;color:var(--text-muted)">Uploaded just now · ${ext}</div>
+      </div>
+      <span class="verify-badge unverified">⏳ Pending</span>
+    </div>`;
+  showToast(`"${file.name}" uploaded. Pending review.`, 'info');
+  input.value = '';
+}
+
+function escapeHtml(s) {
+  const d = document.createElement('div'); d.textContent = s; return d.innerHTML;
+}
+</script>
+</body>
+</html>

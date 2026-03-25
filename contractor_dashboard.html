@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — Contractor Portal</title>
+  <link rel="stylesheet" href="contractor.css"/>
+  <style>
+    /* ── Dashboard-specific styles ── */
+    .chart-bar-wrap { display: flex; align-items: flex-end; gap: 6px; height: 100px; padding: 0 4px; }
+    .chart-bar {
+      flex: 1; border-radius: 5px 5px 0 0;
+      background: linear-gradient(180deg, var(--gold) 0%, var(--maroon) 100%);
+      transition: all var(--transition); cursor: pointer; position: relative; min-width: 14px;
+    }
+    .chart-bar:hover { filter: brightness(1.25); }
+    .chart-bar .bar-tip {
+      position: absolute; bottom: calc(100% + 5px); left: 50%;
+      transform: translateX(-50%); background: var(--surface-3);
+      border: 1px solid var(--border-gold); border-radius: 6px;
+      padding: 3px 8px; font-size: 10px; color: var(--gold);
+      white-space: nowrap; opacity: 0; pointer-events: none;
+      transition: opacity 0.15s;
+    }
+    .chart-bar:hover .bar-tip { opacity: 1; }
+    .chart-labels { display: flex; gap: 6px; padding: 0 4px; margin-top: 5px; }
+    .chart-labels span { flex: 1; text-align: center; font-size: 9.5px; color: var(--text-dim); min-width: 14px; }
+
+    .activity-list { display: flex; flex-direction: column; gap: 1px; }
+    .activity-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 11px 0; border-bottom: 1px solid var(--border);
+    }
+    .activity-item:last-child { border-bottom: none; }
+    .activity-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      flex-shrink: 0; margin-top: 5px;
+    }
+    .activity-content { flex: 1; min-width: 0; }
+    .activity-title { font-size: 12.5px; color: var(--text-primary); font-weight: 500; }
+    .activity-meta  { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .activity-time  { font-size: 10.5px; color: var(--text-dim); white-space: nowrap; }
+
+    .service-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 0; border-bottom: 1px solid var(--border);
+    }
+    .service-row:last-child { border-bottom: none; }
+    .service-rank {
+      width: 22px; height: 22px; border-radius: 6px;
+      background: var(--gold-dim); display: flex; align-items: center;
+      justify-content: center; font-size: 11px; font-weight: 700;
+      color: var(--gold); flex-shrink: 0;
+    }
+    .service-bar-bg {
+      flex: 1; height: 5px; background: var(--surface-3); border-radius: 99px; overflow: hidden;
+    }
+    .service-bar-fill {
+      height: 100%; border-radius: 99px;
+      background: linear-gradient(90deg, var(--gold), var(--maroon));
+      transition: width 1.2s cubic-bezier(0.4,0,0.2,1);
+    }
+    .service-pct { font-size: 11px; color: var(--text-muted); min-width: 30px; text-align: right; }
+
+    .upcoming-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 12px; border-radius: 10px;
+      border: 1px solid var(--border); background: var(--surface-2);
+      margin-bottom: 8px; transition: all var(--transition);
+    }
+    .upcoming-item:hover { border-color: var(--gold-border); background: var(--gold-dim); }
+    .upcoming-date {
+      width: 42px; text-align: center; flex-shrink: 0;
+    }
+    .upcoming-date .day { font-size: 20px; font-weight: 700; color: var(--gold); font-family: 'Playfair Display',serif; line-height: 1; }
+    .upcoming-date .mon { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; }
+    .upcoming-body { flex: 1; min-width: 0; }
+    .upcoming-title { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+    .upcoming-client { font-size: 11.5px; color: var(--text-muted); margin-top: 1px; }
+    .upcoming-time { font-size: 11px; color: var(--text-dim); white-space: nowrap; }
+  </style>
+</head>
+<body>
+<div class="portal-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="logo-mark">CP</div>
+        <div class="sidebar-logo-text">
+          <strong>ContractorHub</strong>
+          <small>Contractor Portal</small>
+        </div>
+      </div>
+      <button class="toggle-btn" id="sidebarToggle" title="Toggle Sidebar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+      </button>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-avatar-wrap">
+        <img class="user-avatar" id="sidebarAvatar" src="" alt="" style="display:none"/>
+        <div class="user-avatar-fallback" id="sidebarAvatarFallback">JD</div>
+        <span class="status-dot"></span>
+      </div>
+      <div class="user-info">
+        <div class="user-name" id="sidebarUserName">Juan dela Cruz</div>
+        <div class="user-role" id="sidebarUserRole">Contractor</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a href="contractor_dashboard.html" class="nav-item active" data-page="contractor_dashboard.html">
+        <span class="nav-icon">🏠</span>
+        <span class="sidebar-label">Dashboard</span>
+        <span class="nav-tooltip">Dashboard</span>
+      </a>
+      <a href="contractor_bookings.html" class="nav-item" data-page="contractor_bookings.html">
+        <span class="nav-icon">📋</span>
+        <span class="sidebar-label">Bookings</span>
+        <span class="nav-badge" id="bookingsBadge">3</span>
+        <span class="nav-tooltip">Bookings</span>
+      </a>
+      <a href="contractor_messages.html" class="nav-item" data-page="contractor_messages.html">
+        <span class="nav-icon">💬</span>
+        <span class="sidebar-label">Messages</span>
+        <span class="nav-badge" id="messagesBadge">5</span>
+        <span class="nav-tooltip">Messages</span>
+      </a>
+      <a href="contractor_calendar.html" class="nav-item" data-page="contractor_calendar.html">
+        <span class="nav-icon">📅</span>
+        <span class="sidebar-label">Calendar</span>
+        <span class="nav-tooltip">Calendar</span>
+      </a>
+      <div class="nav-section-label">Account</div>
+      <a href="contractor_profile.html" class="nav-item" data-page="contractor_profile.html">
+        <span class="nav-icon">👤</span>
+        <span class="sidebar-label">Profile</span>
+        <span class="nav-tooltip">Profile</span>
+      </a>
+      <a href="contractor_settings.html" class="nav-item" data-page="contractor_settings.html">
+        <span class="nav-icon">⚙️</span>
+        <span class="sidebar-label">Settings</span>
+        <span class="nav-tooltip">Settings</span>
+      </a>
+      <div class="divider"></div>
+      <button class="nav-item nav-logout" onclick="handleLogout(event)">
+        <span class="nav-icon">🚪</span>
+        <span class="sidebar-label">Log Out</span>
+        <span class="nav-tooltip">Log Out</span>
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-footer-text">HandyFix v2.0 © 2026</div>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- MAIN -->
+  <main class="main-content" id="mainContent">
+    <header class="top-header">
+      <div class="header-left">
+        <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+        <div>
+          <div class="page-title">Dashboard</div>
+          <div class="breadcrumb">Welcome back, <span id="headerUserName">Juan</span> 👋</div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="header-chip" id="headerDate">—</div>
+        <button class="theme-toggle-btn" title="Toggle Theme">☀️</button>
+        <div class="hdr-btn" title="Notifications">
+          🔔<span class="hdr-notif-dot"></span>
+        </div>
+      </div>
+    </header>
+
+    <div class="page-content">
+
+      <!-- STAT CARDS -->
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card">
+          <div class="stat-icon">📋</div>
+          <div class="stat-value" id="statTotalBookings">48</div>
+          <div class="stat-label">Total Bookings</div>
+          <div class="stat-meta stat-up">▲ 12% this month</div>
+          <div class="stat-bg-icon">📋</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">✅</div>
+          <div class="stat-value" id="statCompleted">34</div>
+          <div class="stat-label">Completed Jobs</div>
+          <div class="stat-meta stat-up">▲ 8% vs last month</div>
+          <div class="stat-bg-icon">✅</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">⏳</div>
+          <div class="stat-value" id="statPending">9</div>
+          <div class="stat-label">Pending</div>
+          <div class="stat-meta stat-neutral">● Awaiting confirmation</div>
+          <div class="stat-bg-icon">⏳</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">❌</div>
+          <div class="stat-value" id="statCancelled">5</div>
+          <div class="stat-label">Cancelled</div>
+          <div class="stat-meta stat-down">▼ 2 this week</div>
+          <div class="stat-bg-icon">❌</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">💰</div>
+          <div class="stat-value" id="statEarnings">₱62K</div>
+          <div class="stat-label">Total Earnings</div>
+          <div class="stat-meta stat-up">▲ ₱8,400 this month</div>
+          <div class="stat-bg-icon">💰</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">⭐</div>
+          <div class="stat-value" id="statRating">4.8</div>
+          <div class="stat-label">Avg. Rating</div>
+          <div class="stat-meta stat-up">▲ Based on 34 reviews</div>
+          <div class="stat-bg-icon">⭐</div>
+        </div>
+      </div>
+
+      <!-- ROW 2: Chart + Upcoming -->
+      <div class="grid-2 mb-6">
+        <!-- Monthly Bookings Chart -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="card-title-icon">📊</span> Monthly Bookings</div>
+            <span class="badge badge-gold">2026</span>
+          </div>
+          <div class="chart-bar-wrap" id="bookingsChart"></div>
+          <div class="chart-labels" id="chartLabels"></div>
+        </div>
+
+        <!-- Upcoming Bookings -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="card-title-icon">📅</span> Upcoming Jobs</div>
+            <a href="contractor_bookings.html" class="btn btn-xs btn-outline-gold">View All</a>
+          </div>
+          <div id="upcomingList"></div>
+        </div>
+      </div>
+
+      <!-- ROW 3: Top Services + Activity -->
+      <div class="grid-2">
+        <!-- Top Services -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="card-title-icon">🏆</span> Top Services</div>
+          </div>
+          <div id="topServicesList"></div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="card-title-icon">🔔</span> Recent Activity</div>
+            <span class="badge badge-muted">Today</span>
+          </div>
+          <div class="activity-list" id="activityList"></div>
+        </div>
+      </div>
+
+    </div><!-- /page-content -->
+  </main>
+</div>
+
+<div id="toast-container"></div>
+<div class="modal-overlay" id="logoutModal">
+  <div class="modal" style="max-width:360px;text-align:center">
+    <div style="font-size:44px;margin-bottom:12px">🚪</div>
+    <div class="modal-title" style="text-align:center;margin-bottom:8px">Log Out?</div>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:22px">You will be returned to the login screen.</p>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button class="btn btn-secondary" onclick="closeModal('logoutModal')">Stay</button>
+      <button class="btn btn-maroon" onclick="confirmLogout()">Yes, Log Out</button>
+    </div>
+  </div>
+</div>
+<script src="contractor.js"></script>
+<script>
+/* ── Dashboard Page Script ── */
+document.addEventListener('DOMContentLoaded', () => {
+  renderChart();
+  renderUpcoming();
+  renderTopServices();
+  renderActivity();
+  animateCounters();
+});
+
+/* Chart */
+function renderChart() {
+  const data   = [5, 8, 6, 11, 9, 14, 10, 13, 12, 16, 11, 9];
+  const labels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const max    = Math.max(...data);
+  const wrap   = document.getElementById('bookingsChart');
+  const lWrap  = document.getElementById('chartLabels');
+  if (!wrap) return;
+  data.forEach((v, i) => {
+    const pct  = Math.round((v / max) * 100);
+    const bar  = document.createElement('div');
+    bar.className = 'chart-bar';
+    bar.style.height = '0%';
+    bar.innerHTML = `<div class="bar-tip">${v} bookings</div>`;
+    wrap.appendChild(bar);
+    setTimeout(() => { bar.style.height = pct + '%'; }, 200 + i * 60);
+  });
+  labels.forEach(l => {
+    const s = document.createElement('span');
+    s.textContent = l;
+    lWrap.appendChild(s);
+  });
+}
+
+/* Upcoming */
+function renderUpcoming() {
+  const items = [
+    { day:'21', mon:'Mar', title:'Electrical Wiring Install', client:'Maria Santos', time:'9:00 AM', status:'confirmed' },
+    { day:'22', mon:'Mar', title:'Plumbing Repair',           client:'Carlo Reyes',  time:'2:00 PM', status:'pending' },
+    { day:'24', mon:'Mar', title:'Ceiling Repaint',           client:'Ana Lim',      time:'8:00 AM', status:'confirmed' },
+  ];
+  const wrap = document.getElementById('upcomingList');
+  if (!wrap) return;
+  items.forEach(it => {
+    wrap.innerHTML += `
+      <div class="upcoming-item">
+        <div class="upcoming-date">
+          <div class="day">${it.day}</div>
+          <div class="mon">${it.mon}</div>
+        </div>
+        <div class="upcoming-body">
+          <div class="upcoming-title">${it.title}</div>
+          <div class="upcoming-client">👤 ${it.client}</div>
+        </div>
+        <div class="flex flex-col items-center gap-1">
+          <div class="upcoming-time">⏰ ${it.time}</div>
+          <span class="badge ${it.status === 'confirmed' ? 'badge-success' : 'badge-warning'}">${it.status}</span>
+        </div>
+      </div>`;
+  });
+}
+
+/* Top Services */
+function renderTopServices() {
+  const services = [
+    { name:'Electrical Work', pct: 78 },
+    { name:'Plumbing',        pct: 62 },
+    { name:'Painting',        pct: 45 },
+    { name:'Carpentry',       pct: 30 },
+    { name:'Tiling',          pct: 18 },
+  ];
+  const wrap = document.getElementById('topServicesList');
+  if (!wrap) return;
+  services.forEach((s, i) => {
+    wrap.innerHTML += `
+      <div class="service-row">
+        <div class="service-rank">${i + 1}</div>
+        <span style="font-size:12.5px;flex:0 0 130px;color:var(--text-primary)">${s.name}</span>
+        <div class="service-bar-bg">
+          <div class="service-bar-fill" id="sbar${i}" style="width:0%"></div>
+        </div>
+        <span class="service-pct">${s.pct}%</span>
+      </div>`;
+  });
+  setTimeout(() => {
+    services.forEach((s, i) => {
+      const el = document.getElementById('sbar' + i);
+      if (el) el.style.width = s.pct + '%';
+    });
+  }, 400);
+}
+
+/* Activity */
+function renderActivity() {
+  const items = [
+    { dot:'#22c55e', title:'Booking #B-048 Completed',        meta:'Electrical wiring — Maria Santos', time:'10 min ago' },
+    { dot:'var(--gold)', title:'New booking request received', meta:'Plumbing repair — Carlo Reyes',   time:'1 hr ago' },
+    { dot:'#818cf8', title:'Message from Ana Lim',            meta:'"Can we reschedule to 8AM?"',      time:'2 hrs ago' },
+    { dot:'#ef4444', title:'Booking #B-045 Cancelled',        meta:'Carpentry — Rex Torres',           time:'Yesterday' },
+    { dot:'var(--gold)', title:'New 5-star review received',  meta:'From Maria Santos',                time:'Yesterday' },
+  ];
+  const wrap = document.getElementById('activityList');
+  if (!wrap) return;
+  items.forEach(it => {
+    wrap.innerHTML += `
+      <div class="activity-item">
+        <div class="activity-dot" style="background:${it.dot}"></div>
+        <div class="activity-content">
+          <div class="activity-title">${it.title}</div>
+          <div class="activity-meta">${it.meta}</div>
+        </div>
+        <div class="activity-time">${it.time}</div>
+      </div>`;
+  });
+}
+
+/* Counter Animation */
+function animateCounters() {
+  const counters = [
+    { id: 'statTotalBookings', target: 48,   prefix: '',  suffix: '' },
+    { id: 'statCompleted',     target: 34,   prefix: '',  suffix: '' },
+    { id: 'statPending',       target: 9,    prefix: '',  suffix: '' },
+    { id: 'statCancelled',     target: 5,    prefix: '',  suffix: '' },
+    { id: 'statRating',        target: 4.8,  prefix: '',  suffix: '',  float: true },
+  ];
+  counters.forEach(c => {
+    const el = document.getElementById(c.id);
+    if (!el) return;
+    let current = 0;
+    const step = c.target / 40;
+    const timer = setInterval(() => {
+      current = Math.min(current + step, c.target);
+      el.textContent = c.prefix + (c.float ? current.toFixed(1) : Math.floor(current)) + c.suffix;
+      if (current >= c.target) clearInterval(timer);
+    }, 28);
+  });
+}
+</script>
+</body>
+</html>
